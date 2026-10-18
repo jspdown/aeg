@@ -31,6 +31,8 @@
           modules = ./gomod2nix.toml;
           go = pkgs.go;
           subPackages = [ "cmd/aeg" ];
+          # The builder tests only subPackages, so checks.test runs the tests of all packages.
+          doCheck = false;
         };
       in
       {
@@ -49,6 +51,18 @@
             doCheck = false;
             installPhase = "touch $out";
           });
+
+          # The e2e tests need a VM, so the e2e tag is not set here.
+          test = aeg.overrideAttrs {
+            name = "aeg-test";
+            # The race detector needs cgo.
+            CGO_ENABLED = 1;
+            buildPhase = ''
+              export HOME=$TMPDIR
+              go test -race ./...
+            '';
+            installPhase = "touch $out";
+          };
         };
 
         devShells.default = pkgs.mkShell {
