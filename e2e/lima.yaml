@@ -1,0 +1,42 @@
+# Lima VM for the end-to-end tests. run.sh creates it on the first run.
+minimumLimaVersion: 1.0.0
+
+images:
+  - location: https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img
+    arch: aarch64
+  - location: https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
+    arch: x86_64
+
+cpus: 2
+memory: 2GiB
+
+# The tests read the binaries from the repository, at the same path as on the host.
+mounts:
+  - location: "~"
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+
+      # srt needs bubblewrap, socat and ripgrep on Linux.
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y bubblewrap socat ripgrep curl xz-utils
+
+      # srt needs Node.js 22.12 or later. Ubuntu 24.04 has Node.js 18.
+      node=v22.20.0
+      case "$(uname -m)" in
+        aarch64) arch=arm64 ;;
+        x86_64) arch=x64 ;;
+      esac
+      curl -fsSL "https://nodejs.org/dist/$node/node-$node-linux-$arch.tar.xz" | tar -xJ -C /usr/local --strip-components=1
+      npm install -g @anthropic-ai/sandbox-runtime@0.0.78
+
+      # bubblewrap makes user namespaces, and Ubuntu 24.04 blocks them for unprivileged users.
+      echo kernel.apparmor_restrict_unprivileged_userns=0 > /etc/sysctl.d/99-aeg-e2e.conf
+      sysctl --system
+
+      # The test upstream listens on 127.0.0.1. A name that is not in NO_PROXY makes the clients use AEG.
+      grep -q upstream.test /etc/hosts || echo "127.0.0.1 upstream.test" >> /etc/hosts

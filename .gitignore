@@ -1,0 +1,6 @@
+/result
+/result-*
+/.idea/
+.claude/settings.local.json
+/e2e/bin/
+.DS_Store

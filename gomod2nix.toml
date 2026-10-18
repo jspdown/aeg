@@ -1,0 +1,30 @@
+schema = 3
+
+[mod]
+  [mod.'github.com/mattn/go-colorable']
+    version = 'v0.1.16'
+    hash = 'sha256-f6a+e6/dSux1xiWSkd/8gmfoWV1i4sNy6Z+6CuXkhrk='
+
+  [mod.'github.com/mattn/go-isatty']
+    version = 'v0.0.24'
+    hash = 'sha256-pmq8KKIb2+qMF3E1cR2B7NAj5joF2tZduyXjIfIlkTk='
+
+  [mod.'github.com/rs/zerolog']
+    version = 'v1.35.1'
+    hash = 'sha256-JMry/37tnOV0ZUCeWRsduxb3WehvbLxUUZfF2l+Cz/s='
+
+  [mod.'github.com/stretchr/testify']
+    version = 'v1.12.1'
+    hash = 'sha256-9MTDdVjZMh1MJ5EH3HmAFrm24YqZayeMBgKwtaURZCc='
+
+  [mod.'github.com/urfave/cli/v3']
+    version = 'v3.14.0'
+    hash = 'sha256-VJEDtT4Ue58CFynkrLybj1NzahhkuPmPURSKqhdimiA='
+
+  [mod.'go.yaml.in/yaml/v3']
+    version = 'v3.0.5'
+    hash = 'sha256-ygho+GU5kE7vPMx+dZYyNfCaeMjNxj66XmrcVf3afFE='
+
+  [mod.'golang.org/x/sys']
+    version = 'v0.49.0'
+    hash = 'sha256-/1S3yy3in72ygZT1CKymvOzJZqCMYiGSqZDfvSyB3LI='
