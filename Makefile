@@ -1,4 +1,4 @@
-.PHONY: all build check e2e fuzz help
+.PHONY: all build check e2e fuzz vuln help
 
 FUZZTIME ?= 60s
 
@@ -15,6 +15,9 @@ e2e: ## Run the end-to-end tests in a Lima VM, with and without srt
 
 fuzz: ## Fuzz the route policy for FUZZTIME (default 60s)
 	nix develop --command go test -run '^$$' -fuzz FuzzRouteAllows -fuzztime $(FUZZTIME) ./internal/proxy
+
+vuln: ## Look for known vulnerabilities in the dependencies and the Go version (needs the network)
+	nix develop --command govulncheck ./...
 
 help: ## Show this help
 	@awk -F ':.*## ' '/^[a-z0-9]+:.*## / { printf "  %-8s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)

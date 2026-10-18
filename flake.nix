@@ -69,6 +69,7 @@
           inputsFrom = [ aeg ];
           packages = [
             pkgs.golangci-lint
+            pkgs.govulncheck
             pkgs.lima
             g2n.gomod2nix
           ];
