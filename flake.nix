@@ -34,6 +34,32 @@
           # The builder tests only subPackages, so checks.test runs the tests of all packages.
           doCheck = false;
         };
+
+        e2eTest = aeg.overrideAttrs {
+          name = "aeg-e2e-test";
+          buildPhase = ''
+            mkdir -p $out/bin
+            go test -c -tags e2e -o $out/bin/e2e.test ./e2e
+          '';
+          installPhase = "true";
+        };
+
+        # The e2e tests run AEG and srt in a NixOS VM. Nix runs the VM only on Linux.
+        e2e = pkgs.testers.runNixOSTest {
+          name = "aeg-e2e";
+          nodes.machine = {
+            environment.systemPackages = [
+              pkgs.curl
+              pkgs.sandbox-runtime
+            ];
+            # The test upstream listens on 127.0.0.1. A name that is not in NO_PROXY makes the clients use AEG.
+            networking.hosts."127.0.0.1" = [ "upstream.test" ];
+          };
+          testScript = ''
+            machine.wait_for_unit("multi-user.target")
+            machine.succeed("cd /tmp && AEG_BIN=${aeg}/bin/aeg ${e2eTest}/bin/e2e.test -test.v >&2")
+          '';
+        };
       in
       {
         packages.default = aeg;
@@ -63,7 +89,8 @@
             '';
             installPhase = "touch $out";
           };
-        };
+        }
+        // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux { inherit e2e; };
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [ aeg ];
