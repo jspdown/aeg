@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"net/url"
+	"path"
 	"strings"
 	"testing"
 
@@ -53,10 +55,7 @@ func TestCheckCanonical(t *testing.T) {
 func TestRouteAllows(t *testing.T) {
 	t.Parallel()
 
-	d := &config.Destination{Routes: []config.Route{
-		{Methods: []string{"GET"}, Paths: []string{"/repos/acme/**"}},
-		{Paths: []string{"/acme/*/info/refs", "/acme/*/git-upload-pack"}},
-	}}
+	d := routesDestination()
 
 	tests := []struct {
 		method, path string
@@ -79,6 +78,37 @@ func TestRouteAllows(t *testing.T) {
 			assert.Equal(t, test.ok, routeAllows(d, test.method, test.path))
 		})
 	}
+}
+
+// FuzzRouteAllows checks that an upstream that decodes or cleans an allowed path still gets an allowed path.
+func FuzzRouteAllows(f *testing.F) {
+	d := routesDestination()
+
+	for _, p := range []string{"/repos/acme/app", "/repos/acme/", "/acme/app/info/refs", "/repos/acme/a%20b", "/repos/acme/%2e%2e/x"} {
+		f.Add("GET", p)
+	}
+
+	f.Fuzz(func(t *testing.T, method, rawPath string) {
+		if checkCanonical(rawPath) != nil || !routeAllows(d, method, rawPath) {
+			return
+		}
+
+		readings := []string{path.Clean(rawPath)}
+		if decoded, err := url.PathUnescape(rawPath); err == nil {
+			readings = append(readings, decoded, path.Clean(decoded))
+		}
+
+		for _, r := range readings {
+			assert.True(t, routeAllows(d, method, r), "AEG allows %q, but not the upstream reading %q", rawPath, r)
+		}
+	})
+}
+
+func routesDestination() *config.Destination {
+	return &config.Destination{Routes: []config.Route{
+		{Methods: []string{"GET"}, Paths: []string{"/repos/acme/**"}},
+		{Paths: []string{"/acme/*/info/refs", "/acme/*/git-upload-pack"}},
+	}}
 }
 
 func TestPolicy_Destination(t *testing.T) {
