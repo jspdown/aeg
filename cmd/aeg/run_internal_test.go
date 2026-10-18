@@ -31,7 +31,7 @@ func TestOpenLog(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // The test makes this path.
 	require.NoError(t, err)
 	assert.Equal(t, "first\nsecond\n", string(data))
 
