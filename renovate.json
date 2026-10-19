@@ -4,6 +4,11 @@
   "postUpdateOptions": ["gomodTidy"],
   "packageRules": [
     {
+      "description": "Put all the minor, patch and digest updates in one pull request. Each major update gets its own pull request.",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "non-major dependencies"
+    },
+    {
       "description": "Keep this commit equal to the gomod2nix input in flake.lock.",
       "matchManagers": ["gomod"],
       "postUpgradeTasks": {
