@@ -141,12 +141,18 @@ func TestProxy_denies(t *testing.T) {
 		path   string
 		header http.Header
 		host   string
+		opaque bool
 		reason string
 	}{
 		{name: "route", method: http.MethodPost, path: "/repos/acme/app", reason: proxy.ReasonPolicyDenied},
 		{name: "path", method: http.MethodGet, path: "/repos/other/app", reason: proxy.ReasonPolicyDenied},
 		{name: "dot segment", method: http.MethodGet, path: "/repos/acme/%2e%2e/x", reason: proxy.ReasonPathNotCanonical},
 		{name: "double slash", method: http.MethodGet, path: "/repos//acme/app", reason: proxy.ReasonPathNotCanonical},
+		{
+			// The upstream gets "/repos/acme/..;/x%7B", and Tomcat reads "..;" as "..".
+			name: "escaped semicolon", method: http.MethodGet, path: "/repos/acme/..%3B/x{", opaque: true,
+			reason: proxy.ReasonPathNotCanonical,
+		},
 		{name: "host header", method: http.MethodGet, path: "/repos/acme/app", host: "evil.example", reason: proxy.ReasonPolicyDenied},
 		{
 			name: "method override", method: http.MethodGet, path: "/repos/acme/app",
@@ -175,6 +181,11 @@ func TestProxy_denies(t *testing.T) {
 
 			if test.host != "" {
 				req.Host = test.host
+			}
+
+			// The client sends an opaque path as is, and does not encode it again.
+			if test.opaque {
+				req.URL.Opaque = test.path
 			}
 
 			status, body := e.do(t, req)

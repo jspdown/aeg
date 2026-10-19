@@ -204,12 +204,9 @@ func (t *tunnelHandler) check(r *http.Request) *denial {
 		}
 	}
 
-	// EscapedPath can change the encoding that the client sent, and checkCanonical must see that encoding.
-	// RequestURI has it only when it starts with "/".
+	// The upstream gets EscapedPath, and not the path that the client sent.
+	// The two can differ: when the path has a "{", "%3B" becomes ";".
 	rawPath := r.URL.EscapedPath()
-	if strings.HasPrefix(r.RequestURI, "/") {
-		rawPath, _, _ = strings.Cut(r.RequestURI, "?")
-	}
 
 	if err := checkCanonical(rawPath); err != nil {
 		return deny(ReasonPathNotCanonical, t.host, "Path not canonical", err.Error()+". Send a canonical path.")

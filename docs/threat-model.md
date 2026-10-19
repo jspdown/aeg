@@ -65,7 +65,7 @@ The attacker wants to read a credential value, or to use a credential on a host 
 | The agent reads a secret from its environment. | AEG removes each variable that a credential reads with `from.env`. It sets a placeholder in its place, if the configuration has one. |
 | The agent sends a credential to a host that is not in the configuration. | AEG injects only on an exact `host:port`. A wildcard destination cannot inject. |
 | The agent uses a `Host` header, an absolute URL or SNI that names another host. | AEG sends the request to the CONNECT host. It denies a `Host` header or a URL host that is not the CONNECT host. The certificate names the CONNECT host, whatever the SNI. |
-| The agent uses a path that AEG and the upstream read differently. | AEG matches the raw path. It denies `//`, `.` and `..` segments, `\`, `;`, and the escapes `%2F`, `%2E`, `%5C`, `%25` and `%00`. |
+| The agent uses a path that AEG and the upstream read differently. | AEG matches the path that it sends upstream, without decoding it. It denies `//`, `.` and `..` segments, `\`, `;`, and the escapes `%2F`, `%2E`, `%5C`, `%25` and `%00`. |
 | The agent changes the method, host or path with a header. | AEG denies `X-HTTP-Method-Override`, `X-Forwarded-Host` and the other headers in [errors.md](errors.md#policy_denied). |
 | The agent leaves the policy with a protocol change. | AEG denies plain HTTP, a CONNECT in a tunnel and each `Upgrade` request, which includes WebSocket. |
 | An upstream redirects the agent to another host. | AEG does not follow redirects. The client sends a new request, and AEG checks it again. |
