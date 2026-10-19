@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "postUpdateOptions": ["gomodTidy"],
+  "packageRules": [
+    {
+      "description": "Keep this commit equal to the gomod2nix input in flake.lock.",
+      "matchManagers": ["gomod"],
+      "postUpgradeTasks": {
+        "commands": ["go run github.com/nix-community/gomod2nix@1201ddd1279c35497754f016ef33d5e060f3da8d --dir . --outdir ."],
+        "fileFilters": ["gomod2nix.toml"],
+        "executionMode": "branch",
+        "installTools": { "golang": {} }
+      }
+    }
+  ]
+}
