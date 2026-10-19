@@ -24,12 +24,27 @@
         pkgs = nixpkgs.legacyPackages.${system};
         g2n = gomod2nix.legacyPackages.${system};
 
+        # nixpkgs gets a Go security release one to three weeks after go.dev.
+        # Until then, Nix builds the release in go.json, which .github/update-go.sh updates every day.
+        goRelease = builtins.fromJSON (builtins.readFile ./go.json);
+        go =
+          if pkgs.lib.versionAtLeast pkgs.go_1_26.version goRelease.version then
+            pkgs.go_1_26
+          else
+            pkgs.go_1_26.overrideAttrs {
+              inherit (goRelease) version;
+              src = pkgs.fetchurl {
+                url = "https://go.dev/dl/go${goRelease.version}.src.tar.gz";
+                inherit (goRelease) sha256;
+              };
+            };
+
         aeg = g2n.buildGoApplication {
           pname = "aeg";
           version = "0.1.0";
           src = ./.;
           modules = ./gomod2nix.toml;
-          go = pkgs.go;
+          inherit go;
           subPackages = [ "cmd/aeg" ];
           # The builder tests only subPackages, so checks.test runs the tests of all packages.
           doCheck = false;
