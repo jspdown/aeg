@@ -115,6 +115,7 @@
             pkgs.lima
             g2n.gomod2nix
           ];
+          GOROOT = "${go}/share/go";
         };
       }
     );
