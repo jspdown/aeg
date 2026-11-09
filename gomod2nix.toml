@@ -22,8 +22,8 @@ schema = 3
     hash = 'sha256-VJEDtT4Ue58CFynkrLybj1NzahhkuPmPURSKqhdimiA='
 
   [mod.'go.yaml.in/yaml/v3']
-    version = 'v3.0.5'
-    hash = 'sha256-ygho+GU5kE7vPMx+dZYyNfCaeMjNxj66XmrcVf3afFE='
+    version = 'v3.0.6'
+    hash = 'sha256-4XBaZyVp0pU1FzRY+M/juXISzENKJ+v189aVvU0mvqM='
 
   [mod.'golang.org/x/sys']
     version = 'v0.49.0'
